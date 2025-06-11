@@ -33,7 +33,7 @@ const ThemeSwitcher = () => {
       className="p-2 rounded-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
       aria-label="Toggle Theme"
     >
-      {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
+      {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}{" "}
     </button>
   );
 };
@@ -44,7 +44,6 @@ export default function HomePage() {
   const [dueDate, setDueDate] = useState<Date | null>(null);
 
   useEffect(() => {
-    // Thay đổi cổng API nếu backend của bạn chạy ở cổng khác 3000
     axios.get(`${API_URL}/todos`).then((res) => setTodos(res.data));
   }, []);
 
@@ -66,118 +65,136 @@ export default function HomePage() {
     const todo = todos.find((t) => t.id === id);
     if (!todo) return;
     const updatedTodo = { ...todo, isCompleted: !todo.isCompleted };
-    // API của bạn dùng @Body('id'), nhưng chuẩn hơn là dùng @Param('id')
-    // Tạm thời gửi id trong body để khớp với controller hiện tại
+    // API nên được cập nhật để nhận id từ URL param (@Param('id')) thay vì body
     await axios.put(`${API_URL}/todos/${id}`, {
-      id: id,
       isCompleted: updatedTodo.isCompleted,
     });
     setTodos(todos.map((t) => (t.id === id ? updatedTodo : t)));
   };
 
   const handleDeleteTodo = async (id: number) => {
-    // Tương tự, tạm thời gửi id trong body
-    await axios.delete(`${API_URL}/todos/${id}`, { data: { id: id } });
+    // API nên được cập nhật để nhận id từ URL param (@Param('id'))
+    await axios.delete(`${API_URL}/todos/${id}`);
     setTodos(todos.filter((t) => t.id !== id));
   };
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-white transition-colors duration-300">
+      {" "}
+      <main className="max-w-2xl mx-auto p-4 sm:p-8">
+        {" "}
+        <header className="flex justify-between items-center mb-8">
+          {/* Thay đổi: Kích thước chữ nhỏ hơn trên mobile */}{" "}
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-800 dark:text-white">
+            Việc cần làm{" "}
+          </h1>
+          <ThemeSwitcher />{" "}
+        </header>{" "}
+        {/* Thay đổi: Form xếp dọc trên mobile, xếp ngang trên màn hình lớn hơn */}{" "}
+        <form
+          onSubmit={handleAddTodo}
+          className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg shadow-md flex flex-col sm:flex-row items-center gap-3 sm:gap-4"
+        >
+          {" "}
+          <div className="relative w-full flex items-center bg-slate-100 dark:bg-slate-700/50 rounded-md p-2 sm:flex-grow">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Thêm một công việc mới..."
+              className="flex-grow bg-transparent focus:outline-none text-lg w-full"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <button
+              type="submit"
+              className="bg-sky-600 hover:bg-sky-700 text-white font-bold p-2 rounded-full transition-colors flex-shrink-0 sm:hidden"
+              aria-label="Thêm công việc"
+            >
+              <Plus size={22} />
+            </button>
+          </div>{" "}
+          <div className="relative w-full sm:w-auto">
+            {" "}
+            <DatePicker
+              selected={dueDate}
+              onChange={(date: Date | null) => setDueDate(date)}
+              minDate={new Date()}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="Chọn ngày hết hạn"
+              // Thay đổi: Class responsive và thêm withPortal
+              className="w-full sm:w-40 bg-slate-100 dark:bg-slate-700 p-2.5 sm:p-2 rounded-md text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500"
+              isClearable
+              withPortal // Hiển thị lịch ở trung tâm màn hình trên mobile
+            />{" "}
+          </div>{" "}
+          <button
+            type="submit"
+            className="bg-sky-600 hover:bg-sky-700 text-white font-bold p-2 rounded-full transition-colors flex-shrink-0 hidden sm:block"
+            aria-label="Thêm công việc"
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            <Plus size={22} />{" "}
+          </button>{" "}
+        </form>
+        {/* Todo List */}{" "}
+        <div className="space-y-4">
+          {" "}
+          {todos.map((todo) => (
+            <div
+              key={todo.id}
+              className={`flex items-center p-4 rounded-lg shadow-sm transition-all duration-300 ${
+                todo.isCompleted
+                  ? "bg-green-100 dark:bg-green-900/50 opacity-60"
+                  : "bg-white dark:bg-slate-800"
+              }`}
+            >
+              {" "}
+              <input
+                type="checkbox"
+                checked={todo.isCompleted}
+                onChange={() => toggleComplete(todo.id)}
+                className="form-checkbox h-5 w-5 rounded text-sky-600 bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-sky-500 cursor-pointer flex-shrink-0"
+              />{" "}
+              <div className="ml-4 flex-grow overflow-hidden">
+                {" "}
+                <p
+                  className={`font-medium break-words ${
+                    todo.isCompleted
+                      ? "line-through text-slate-500"
+                      : "text-slate-900 dark:text-slate-100"
+                  }`}
+                >
+                  {todo.title}{" "}
+                </p>{" "}
+                {todo.dueDate && (
+                  <div
+                    className={`flex items-center text-sm mt-1 ${
+                      todo.isCompleted
+                        ? "text-slate-400"
+                        : "text-slate-500 dark:text-slate-400"
+                    }`}
+                  >
+                    {" "}
+                    <Calendar size={14} className="mr-1.5 flex-shrink-0" />{" "}
+                    <span>
+                      {/* Sửa đổi để tránh lỗi nếu dueDate không hợp lệ */}
+                      {format(
+                        new Date(todo.dueDate.replace(/-/g, "/")),
+                        "dd/MM/yyyy"
+                      )}
+                    </span>{" "}
+                  </div>
+                )}{" "}
+              </div>{" "}
+              <button
+                onClick={() => handleDeleteTodo(todo.id)}
+                className="ml-4 p-2 text-slate-400 hover:text-red-500 dark:hover:text-red-400 rounded-full transition-colors flex-shrink-0"
+                aria-label="Xóa công việc"
+              >
+                <Trash2 size={18} />{" "}
+              </button>{" "}
+            </div>
+          ))}{" "}
+        </div>{" "}
+      </main>{" "}
     </div>
   );
 }
