@@ -62,14 +62,22 @@ export default function HomePage() {
   };
 
   const toggleComplete = async (id: number) => {
+    console.log(`Toggling todo with id: ${id}`); // Add this line for debugging
     const todo = todos.find((t) => t.id === id);
-    if (!todo) return;
+    if (!todo) {
+      console.log(`Todo with id ${id} not found`); // Add this line for debugging
+      return;
+    }
     const updatedTodo = { ...todo, isCompleted: !todo.isCompleted };
     // API nên được cập nhật để nhận id từ URL param (@Param('id')) thay vì body
-    await axios.put(`${API_URL}/todos/${id}`, {
-      isCompleted: updatedTodo.isCompleted,
-    });
-    setTodos(todos.map((t) => (t.id === id ? updatedTodo : t)));
+    try {
+      await axios.put(`${API_URL}/todos/${id}`, {
+        isCompleted: updatedTodo.isCompleted,
+      });
+      setTodos(prevTodos => prevTodos.map((t) => (t.id === id ? updatedTodo : t)));
+    } catch (error) {
+      console.error("Failed to update todo:", error); // Log any errors
+    }
   };
 
   const handleDeleteTodo = async (id: number) => {
